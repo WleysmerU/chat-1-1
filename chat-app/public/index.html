@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Declaración del tipo de documento -->
+    <meta charset="UTF-8"> <!-- Codificación de caracteres -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Diseño responsivo -->
+    <title>Iniciar Sesión/Registro</title> <!-- Título de la página -->
+    <link rel="stylesheet" href="styles.css"> <!-- Hoja de estilos -->
+    <script src="/socket.io/socket.io.js"></script> <!-- Biblioteca Socket.IO para WebSockets -->
+</head>
+<body>
+    <!-- Sección para iniciar sesión -->
+    <h1>Iniciar Sesión</h1>
+    <!-- Campo para el nombre de usuario -->
+    <input id="username" placeholder="Nombre de usuario" />
+    <!-- Campo para la contraseña -->
+    <input id="password" type="password" placeholder="Contraseña" />
+    <!-- Botón para enviar las credenciales de inicio de sesión -->
+    <button onclick="login()">Iniciar Sesión</button>
+    <!-- Contenedor para mensajes de inicio de sesión -->
+    <div id="login-message"></div>
+    <!-- Botón para redirigir a la página de registro -->
+    <button onclick="window.location.href='register.html'">Registrarse</button>
+
+    <!-- Sección para acceder al panel de administración -->
+    <h2>Panel de Administración</h2>
+    <!-- Botón para redirigir al panel de administración -->
+    <button onclick="goToAdminPanel()">Acceder al Panel de Administración</button>
+
+    <script>
+        // Conexión al servidor mediante Socket.IO
+        const socket = io();
+
+        // Función para manejar el inicio de sesión
+        function login() {
+            const username = document.getElementById('username').value; // Obtiene el nombre de usuario
+            const password = document.getElementById('password').value; // Obtiene la contraseña
+            socket.emit('login', { username, password }); // Envía las credenciales al servidor
+        }
+
+        // Maneja la respuesta del servidor para el inicio de sesión
+        socket.on('login response', (data) => {
+            if (data.success) { 
+                // Si el inicio de sesión es exitoso, redirige al usuario al chat
+                window.location.href = 'chat.html?username=' + data.username;
+            } else {
+                // Si falla, muestra un mensaje de error
+                document.getElementById('login-message').textContent = data.message;
+            }
+        });
+
+        // Función para manejar el registro de usuarios
+        function register() {
+            const username = document.getElementById('register-username').value; // Nombre de usuario
+            const password = document.getElementById('register-password').value; // Contraseña
+            socket.emit('register', { username, password }); // Envía los datos al servidor
+        }
+
+        // Maneja la respuesta del servidor para el registro
+        socket.on('register response', (data) => {
+            document.getElementById('register-message').textContent = data.message; // Muestra el mensaje del servidor
+            if (data.success) {
+                // Limpia los campos si el registro fue exitoso
+                document.getElementById('register-username').value = '';
+                document.getElementById('register-password').value = '';
+            }
+        });
+
+        // Función para redirigir al panel de administración
+        function goToAdminPanel() {
+            window.location.href = '/admin'; // Redirige al panel de administración
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+/* Configuración general del cuerpo */
+body {
+    background: linear-gradient(0deg, #8e56cb, #416c71d9); /* Fondo degradado */
+    margin: 0; /* Sin margen */
+    display: flex; /* Diseño flexible */
+    flex-direction: column; /* Dirección de los elementos: columna */
+    align-items: center; /* Centrado horizontal */
+    min-height: 100vh; /* Altura mínima del viewport */
+    justify-content: center; /* Centrado vertical */
+}
+
+/* Título principal */
+h1 {
+    text-align: center; /* Centrado del texto */
+    color: #333; /* Color del texto */
+    margin-bottom: 20px; /* Espacio inferior */
+}
+
+/* Contenedores para formularios y chat */
+#register, #login, #chat {
+    background: white; /* Fondo blanco */
+    border-radius: 15px; /* Bordes redondeados */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+    padding: 30px; /* Espaciado interno */
+    margin: 20px 0; /* Margen superior e inferior */
+    max-width: 450px; /* Ancho máximo */
+    width: 100%; /* Ancho completo */
+}
+
+/* Botones generales */
+button {
+    padding: 15px; /* Espaciado interno */
+    background-color: #416c71d9; /* Color de fondo */
+    color: rgb(0, 0, 0); /* Color del texto */
+    border-radius: 30px; /* Bordes redondeados */
+    cursor: pointer; /* Cambia el cursor a mano */
+    margin: 10px 0; /* Margen superior e inferior */
+    border: 1px solid #000000; /* Borde sólido */
+}
+
+/* Efecto hover en botones */
+button:hover {
+    background-color: #416c71d9; /* Color al pasar el cursor */
+}
+
+/* Estilo de los campos de entrada */
+input {
+    width: 70%; /* Ancho del 70% */
+    padding: 15px; /* Espaciado interno */
+    margin: 10px 0; /* Margen superior e inferior */
+    border-radius: 14px; /* Bordes redondeados */
+    background-color: #ffffff70; /* Fondo semitransparente */
+}
+
+/* Estilo de la lista (chat o usuarios) */
+ul {
+    max-height: 300px; /* Altura máxima */
+    overflow-y: auto; /* Scroll vertical si es necesario */
+    border: 1px solid #000000; /* Borde negro sólido */
+    border-radius: 14px; /* Bordes redondeados */
+    background: #ffffff70; /* Fondo semitransparente */
+}
+
+/* Elementos de la lista */
+li {
+    padding: 15px; /* Espaciado interno */
+    border-bottom: 1px solid #ddd; /* Línea divisoria */
+}
+
+/* Último elemento sin línea divisoria */
+li:last-child {
+    border-bottom: none;
+}
+
+/* Mensajes de error */
+#reg-message, #log-message {
+    color: red; /* Color rojo */
+    text-align: center; /* Texto centrado */
+}

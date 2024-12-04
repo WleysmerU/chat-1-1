@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <h1>Chat</h1>
+    <div>
+        <label for="room">Elige una sala:</label>
+        <input id="room" type="text" placeholder="Nombre de la sala"/>
+        <button onclick="joinRoom()">Unirse</button>
+    </div>
+    <button id="leave-room" style="display:none;" onclick="leaveRoom()">Cerrar Sala</button>
+    <button onclick="logout()">Cerrar Sesión</button>
+    <ul id="messages"></ul>
+    <input id="m" autocomplete="off" /><button onclick="sendMessage()">Enviar</button>
+
+    <script>
+        const socket = io();
+        const urlParams = new URLSearchParams(window.location.search);
+        const username = urlParams.get('username');
+        let currentRoom = '';
+
+        function joinRoom() {
+            const room = document.getElementById('room').value;
+            if (room) {
+                currentRoom = room;
+                socket.emit('join room', { username, room });
+                document.getElementById('leave-room').style.display = 'inline';
+            }
+        }
+
+        function leaveRoom() {
+            socket.emit('leave room', currentRoom);
+            currentRoom = '';
+            document.getElementById('leave-room').style.display = 'none';
+        }
+
+        function logout() {
+            window.location.href = 'index.html';
+        }
+
+        socket.on('chat message', function(data) {
+            const item = document.createElement('li');
+            item.textContent = `${data.user}: ${data.msg}`;
+            document.getElementById('messages').appendChild(item);
+            window.scrollTo(0, document.body.scrollHeight);
+        });
+
+        function sendMessage() {
+            const input = document.getElementById('m');
+            socket.emit('chat message', { room: currentRoom, msg: input.value });
+            input.value = '';
+        }
+    </script>
+</body>
+</html>

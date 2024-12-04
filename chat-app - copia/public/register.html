@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <h1>Registro</h1>
+    <input id="reg-username" placeholder="Nombre de usuario" />
+    <input id="reg-password" type="password" placeholder="Contraseña" />
+    <button onclick="register()">Registrar</button>
+    <div id="reg-message"></div>
+    <button onclick="window.location.href='index.html'">Volver a Iniciar Sesión</button>
+
+    <script>
+        const socket = io();
+
+        function register() {
+            const username = document.getElementById('reg-username').value;
+            const password = document.getElementById('reg-password').value;
+            socket.emit('register', { username, password });
+        }
+
+        socket.on('register response', (data) => {
+            document.getElementById('reg-message').textContent = data.message;
+            if (data.success) {
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>

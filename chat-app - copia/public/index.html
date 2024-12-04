@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <h1>Iniciar Sesión</h1>
+    <input id="log-username" placeholder="Nombre de usuario" />
+    <input id="log-password" type="password" placeholder="Contraseña" />
+    <button onclick="login()">Iniciar Sesión</button>
+    <div id="log-message"></div>
+    <button onclick="window.location.href='register.html'">Registrarse</button>
+
+    <script>
+        const socket = io();
+
+        function login() {
+            const username = document.getElementById('log-username').value;
+            const password = document.getElementById('log-password').value;
+            socket.emit('login', { username, password });
+        }
+
+        socket.on('login response', (data) => {
+            if (data.success) {
+                window.location.href = 'chat.html?username=' + data.username;
+            } else {
+                document.getElementById('log-message').textContent = data.message;
+            }
+        });
+    </script>
+</body>
+</html>

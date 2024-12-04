@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Declaración del tipo de documento -->
+    <meta charset="UTF-8"> <!-- Codificación de caracteres -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Habilita diseño responsivo -->
+    <title>Chat</title> <!-- Título de la página -->
+    <link rel="stylesheet" href="styles.css"> <!-- Hoja de estilos externa -->
+    <script src="/socket.io/socket.io.js"></script> <!-- Biblioteca Socket.IO para WebSockets -->
+</head>
+<body>
+    <!-- Encabezado principal del chat -->
+    <h1>Chat</h1>
+    <!-- Sección para mostrar usuarios registrados -->
+    <div>
+        <label>Usuarios registrados:</label>
+        <ul id="user-list"></ul> <!-- Lista dinámica de usuarios registrados -->
+    </div>
+    <!-- Botón para cerrar sala (oculto por defecto) -->
+    <button id="leave-room" style="display:none;" onclick="leaveRoom()">Cerrar Sala</button>
+    <!-- Botón para cerrar sesión -->
+    <button onclick="logout()">Cerrar Sesión</button>
+    <!-- Contenedor de mensajes del chat -->
+    <ul id="messages"></ul>
+    <!-- Campo de entrada de mensajes y botón para enviarlos -->
+    <input id="m" autocomplete="off" /><button onclick="sendMessage()">Enviar</button>
+
+    <script>
+        // Conexión al servidor mediante Socket.IO
+        const socket = io();
+        const urlParams = new URLSearchParams(window.location.search); // Obtiene parámetros de la URL
+        const username = urlParams.get('username'); // Extrae el nombre de usuario
+        let currentRoom = ''; // Variable para la sala actual
+
+        // Solicita al servidor la lista de usuarios
+        socket.emit('get user list');
+
+        // Maneja la lista de usuarios recibida desde el servidor
+        socket.on('user list', function(usernames) {
+            const userList = document.getElementById('user-list'); // Contenedor de la lista de usuarios
+            userList.innerHTML = ''; // Limpia la lista existente
+            usernames.forEach(user => {
+                if (user !== username) { // Evita que el usuario actual aparezca en la lista
+                    const button = document.createElement('button'); // Botón para cada usuario
+                    button.textContent = user; // Muestra el nombre del usuario
+                    button.onclick = () => joinRoom(user); // Asocia la función joinRoom al botón
+                    userList.appendChild(button); // Agrega el botón al contenedor
+                }
+            });
+        });
+
+        // Función para unirse a una sala (inicia conversación con otro usuario)
+        function joinRoom(user) {
+            if (currentRoom) { // Si ya está en una sala, primero la abandona
+                leaveRoom();
+            }
+            currentRoom = user; // Define la nueva sala como el nombre del usuario seleccionado
+            socket.emit('join room', { username, room: currentRoom }); // Notifica al servidor
+            document.getElementById('leave-room').style.display = 'inline'; // Muestra el botón para cerrar sala
+        }
+
+        // Función para salir de una sala
+        function leaveRoom() {
+            socket.emit('leave room', currentRoom); // Notifica al servidor que abandona la sala
+            currentRoom = ''; // Vacía la sala actual
+            document.getElementById('leave-room').style.display = 'none'; // Oculta el botón para cerrar sala
+            document.getElementById('messages').innerHTML = ''; // Limpia los mensajes de la sala
+        }
+
+        // Función para cerrar sesión
+        function logout() {
+            window.location.href = 'index.html'; // Redirige al usuario a la página de inicio
+        }
+
+        // Maneja la recepción de mensajes del chat desde el servidor
+        socket.on('chat message', function(data) {
+            const item = document.createElement('li'); // Crea un elemento de lista
+            item.textContent = `${data.user}: ${data.msg}`; // Muestra el usuario y el mensaje
+            document.getElementById('messages').appendChild(item); // Agrega el mensaje al contenedor
+            window.scrollTo(0, document.body.scrollHeight); // Desplaza la vista hacia abajo automáticamente
+        });
+
+        // Maneja la recepción de mensajes previos al unirse a una sala
+        socket.on('previous messages', function(messages) {
+            const messagesList = document.getElementById('messages'); // Contenedor de mensajes
+            messages.forEach(msg => {
+                const item = document.createElement('li'); // Crea un elemento de lista
+                item.textContent = `${msg.username}: ${msg.message}`; // Muestra el usuario y el mensaje
+                messagesList.appendChild(item); // Agrega el mensaje al contenedor
+            });
+            window.scrollTo(0, document.body.scrollHeight); // Desplaza la vista hacia abajo automáticamente
+        });
+
+        // Función para enviar mensajes
+        function sendMessage() {
+            const input = document.getElementById('m'); // Campo de entrada del mensaje
+            if (currentRoom) { // Solo envía mensajes si está en una sala
+                socket.emit('chat message', { room: currentRoom, msg: input.value }); // Emite el mensaje al servidor
+                input.value = ''; // Limpia el campo de entrada
+            }
+        }
+    </script>
+</body>
+</html>

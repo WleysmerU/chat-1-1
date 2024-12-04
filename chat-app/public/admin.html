@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Declaración del tipo de documento HTML -->
+    <meta charset="UTF-8"> <!-- Especifica la codificación de caracteres -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Hace el sitio responsivo -->
+    <title>Panel de Administración</title> <!-- Título de la página que se muestra en el navegador -->
+    <link rel="stylesheet" href="styles.css"> <!-- Enlace a la hoja de estilos externa -->
+    <script src="/socket.io/socket.io.js"></script> <!-- Carga la biblioteca Socket.IO para comunicación en tiempo real -->
+</head>
+<body>
+    <h1>Panel de Administración</h1> <!-- Título principal -->
+
+    <!-- Sección para iniciar sesión como administrador -->
+    <div id="admin-login">
+        <h2>Iniciar Sesión Administrador</h2>
+        <!-- Campos para ingresar nombre de usuario y contraseña -->
+        <input id="admin-username" placeholder="Nombre de usuario" />
+        <input id="admin-password" type="password" placeholder="Contraseña" />
+        <!-- Botón que llama a la función adminLogin() -->
+        <button onclick="adminLogin()">Iniciar Sesión</button>
+        <!-- Mensaje de respuesta para el inicio de sesión -->
+        <div id="admin-login-message"></div>
+    </div>
+
+    <!-- Panel de administración, oculto inicialmente -->
+    <div id="admin-panel" style="display: none;">
+        <!-- Subsección para agregar un nuevo usuario -->
+        <h2>Agregar Usuario</h2>
+        <input id="new-admin-username" placeholder="Nombre de usuario" />
+        <input id="new-admin-password" type="password" placeholder="Contraseña" />
+        <button onclick="addUser()">Agregar Usuario</button>
+        <div id="admin-message"></div>
+
+        <!-- Subsección para modificar un usuario existente -->
+        <h2>Modificar Usuario</h2>
+        <input id="old-username" placeholder="Nombre de usuario antiguo" />
+        <input id="new-username" placeholder="Nuevo nombre de usuario" />
+        <button onclick="modifyUser()">Modificar Usuario</button>
+        <div id="modify-message"></div>
+
+        <!-- Lista de usuarios con funcionalidad de eliminación -->
+        <h2>Lista de Usuarios</h2>
+        <ul id="user-list"></ul> <!-- Contenedor dinámico para mostrar usuarios -->
+    </div>
+
+    <!-- Scripts de funcionalidad -->
+    <script>
+        // Inicializa la conexión con el servidor usando Socket.IO
+        const socket = io();
+
+        // Función para manejar el inicio de sesión del administrador
+        function adminLogin() {
+            const username = document.getElementById('admin-username').value; // Obtiene el nombre de usuario
+            const password = document.getElementById('admin-password').value; // Obtiene la contraseña
+            // Emite un evento 'admin login' al servidor con las credenciales
+            socket.emit('admin login', { username, password });
+        }
+
+        // Maneja la respuesta del servidor al intentar iniciar sesión
+        socket.on('admin login response', (data) => {
+            document.getElementById('admin-login-message').textContent = data.message; // Muestra el mensaje del servidor
+            if (data.success) { // Si la autenticación fue exitosa
+                document.getElementById('admin-login').style.display = 'none'; // Oculta la sección de inicio de sesión
+                document.getElementById('admin-panel').style.display = 'block'; // Muestra el panel de administración
+                socket.emit('get user list'); // Solicita la lista de usuarios al servidor
+            }
+        });
+
+        // Función para agregar un nuevo usuario
+        function addUser() {
+            const username = document.getElementById('new-admin-username').value; // Obtiene el nuevo nombre de usuario
+            const password = document.getElementById('new-admin-password').value; // Obtiene la contraseña
+            socket.emit('add user', { username, password }); // Emite un evento 'add user' al servidor
+        }
+
+        // Función para modificar un usuario existente
+        function modifyUser() {
+            const oldUsername = document.getElementById('old-username').value; // Obtiene el nombre de usuario antiguo
+            const newUsername = document.getElementById('new-username').value; // Obtiene el nuevo nombre de usuario
+            socket.emit('modify user', { oldUsername, newUsername }); // Emite un evento 'modify user' al servidor
+        }
+
+        // Maneja la recepción de la lista de usuarios desde el servidor
+        socket.on('user list', (users) => {
+            const userList = document.getElementById('user-list'); // Contenedor para la lista de usuarios
+            userList.innerHTML = ''; // Limpia la lista existente
+            users.forEach(user => {
+                const item = document.createElement('li'); // Crea un elemento de lista
+                item.textContent = user; // Muestra el nombre del usuario
+                const deleteButton = document.createElement('button'); // Crea un botón para eliminar
+                deleteButton.textContent = 'Eliminar';
+                deleteButton.onclick = () => deleteUser(user); // Asigna la función deleteUser al botón
+                item.appendChild(deleteButton); // Agrega el botón al elemento de lista
+                userList.appendChild(item); // Agrega el elemento de lista al contenedor
+            });
+        });
+
+        // Función para eliminar un usuario
+        function deleteUser(username) {
+            socket.emit('delete user', username); // Emite un evento 'delete user' al servidor
+        }
+
+        // Maneja respuestas generales del servidor
+        socket.on('admin response', (data) => {
+            if (data.message.includes('modificado')) { // Si se modificó un usuario
+                document.getElementById('modify-message').textContent = data.message; // Muestra el mensaje
+                document.getElementById('old-username').value = ''; // Limpia los campos
+                document.getElementById('new-username').value = '';
+            } else { // Mensajes para agregar o eliminar usuarios
+                document.getElementById('admin-message').textContent = data.message;
+                if (data.success) { // Si la acción fue exitosa, limpia los campos
+                    document.getElementById('new-admin-username').value = '';
+                    document.getElementById('new-admin-password').value = '';
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        #chat { display: none; }
+        ul { list-style-type: none; margin: 0; padding: 0; }
+        li { padding: 8px; background: #f4f4f4; margin-bottom: 5px; }
+        input { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Chat App</h1>
+    <div>
+        <label for="room">Elige una sala:</label>
+        <input id="room" type="text" placeholder="Nombre de la sala"/>
+        <button onclick="joinRoom()">Unirse</button>
+    </div>
+    <div id="chat">
+        <ul id="messages"></ul>
+        <input id="m" autocomplete="off" /><button onclick="sendMessage()">Enviar</button>
+    </div>
+    <script>
+        const socket = io();
+        let currentRoom = '';
+
+        function joinRoom() {
+            const room = document.getElementById('room').value;
+            if (room) {
+                currentRoom = room;
+                socket.emit('join room', room);
+                document.getElementById('chat').style.display = 'block';
+                document.querySelector('div').style.display = 'none';
+            }
+        }
+
+        socket.on('chat message', function(msg) {
+            const item = document.createElement('li');
+            item.textContent = msg;
+            document.getElementById('messages').appendChild(item);
+            window.scrollTo(0, document.body.scrollHeight);
+        });
+
+        function sendMessage() {
+            const input = document.getElementById('m');
+            socket.emit('chat message', { room: currentRoom, msg: input.value });
+            input.value = '';
+        }
+    </script>
+</body>
+</html>

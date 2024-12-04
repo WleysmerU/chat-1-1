@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Declaración del tipo de documento -->
+    <meta charset="UTF-8"> <!-- Codificación de caracteres -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Diseño responsivo -->
+    <title>Registro</title> <!-- Título de la página -->
+    <link rel="stylesheet" href="styles.css"> <!-- Hoja de estilos -->
+    <script src="/socket.io/socket.io.js"></script> <!-- Biblioteca Socket.IO para WebSockets -->
+</head>
+<body>
+    <!-- Sección para el registro de usuarios -->
+    <h1>Registro</h1>
+    <!-- Campo para el nombre de usuario -->
+    <input id="reg-username" placeholder="Nombre de usuario" />
+    <!-- Campo para la contraseña -->
+    <input id="reg-password" type="password" placeholder="Contraseña" />
+    <!-- Botón para enviar los datos de registro -->
+    <button onclick="register()">Registrar</button>
+    <!-- Contenedor para mostrar mensajes del registro -->
+    <div id="reg-message"></div>
+    <!-- Botón para redirigir a la página de inicio de sesión -->
+    <button onclick="window.location.href='index.html'">Volver a Iniciar Sesión</button>
+
+    <!-- Sección para el panel de administración -->
+    <h2>Panel de Administración</h2>
+    <!-- Botón para redirigir al panel administrativo -->
+    <button onclick="goToAdminPanel()">Acceder al Panel de Administración</button>
+
+    <script>
+        // Conexión al servidor mediante Socket.IO
+        const socket = io();
+
+        // Función para manejar el registro de nuevos usuarios
+        function register() {
+            const username = document.getElementById('reg-username').value; // Obtiene el nombre de usuario
+            const password = document.getElementById('reg-password').value; // Obtiene la contraseña
+            socket.emit('register', { username, password }); // Envía los datos al servidor mediante un evento 'register'
+        }
+
+        // Maneja la respuesta del servidor al intento de registro
+        socket.on('register response', (data) => {
+            // Muestra el mensaje de respuesta del servidor en el DOM
+            document.getElementById('reg-message').textContent = data.message;
+            if (data.success) {
+                // Si el registro fue exitoso, redirige a la página de inicio de sesión tras 2 segundos
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            }
+        });
+
+        // Función para redirigir al panel administrativo
+        function goToAdminPanel() {
+            window.location.href = '/admin'; // Redirige al panel de administración
+        }
+    </script>
+</body>
+</html>
